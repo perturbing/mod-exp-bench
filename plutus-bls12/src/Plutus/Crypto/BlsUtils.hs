@@ -25,6 +25,7 @@ module Plutus.Crypto.BlsUtils
 , MultiplicativeGroup (..)
 , pow
 , powMod
+, powModFp
 , modularExponentiationScalar
 , multiplicativeInverse
 , modularExponentiationFp
@@ -193,12 +194,10 @@ powMod b e
 
 {-# INLINABLE extendedEuclidean #-}
 extendedEuclidean :: Integer -> Integer -> (Integer, Integer, Integer)
-extendedEuclidean a b
-    | a == 0    = (b, 0, 1)
-    | otherwise = (gcd, x, y)
-        where (gcd, x', y') = extendedEuclidean (b `modulo` a) a
-              x = y' - (b `divide` a) * x'
-              y = x'
+extendedEuclidean a b = if a == 0 then (b,0,1) else
+        let (gcd,x1,y1) = extendedEuclidean (b `modulo` a) a
+            x = y1 - b `divide` a * x1
+        in (gcd, x, x1)
               
 -- Calculate the multiplicative inverse of a number m modulo a. If this does not exist,
 -- the script will throw an error.
@@ -279,6 +278,14 @@ modularExponentiationFp b e
     | popCountByteString e == 0  = one
     | otherwise = t * modularExponentiationFp (b*b) (shiftByteString e (-1))
                 where t = if testBitByteString e 0 then b else one
+
+{-# INLINABLE powModFp #-}
+powModFp :: Fp -> Integer -> Fp
+powModFp b e
+    | e < 0     = zero
+    | e == 0    = one
+    | even e   = powModFp (b*b) (e `divide` 2)
+    | otherwise = b * powModFp (b*b) ((e - 1) `divide` 2)
 
 instance Module Integer Fp where
     {-# INLINABLE scale #-}
