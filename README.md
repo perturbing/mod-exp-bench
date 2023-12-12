@@ -1,5 +1,5 @@
 # mod-exp-bench
-a benchmark of a PlutusTx implementation of the bls12-381 fields
+a benchmark of a PlutusTx implementation of the bls12-381 fields against different operations. Note that the cost model is against a fork of plutus which uses a preliminary cost model for the new plutus base machine.
 
 # benchmarks
 <table>
